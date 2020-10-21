@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# In[51]:
+# In[7]:
 
 
 import os
@@ -10,6 +10,7 @@ import urllib.request
 from urllib.parse import *
 import requests
 from bs4 import BeautifulSoup
+from kafka import KafkaProducer
 import json
 import re
 import json
@@ -17,6 +18,17 @@ import datetime
 from collections import deque
 
 # with statement
+
+with open('./config/db.json') as json_file:
+    config_data = json.load(json_file)
+    
+addr = [config_data['addr']+':9092']
+
+topic = 'naver.finance.board'
+
+producer = KafkaProducer(bootstrap_servers=addr,
+                         value_serializer=lambda v: json.dumps(v).encode('utf-8'),
+                        api_version=(0,10))
 
 
 def remove_tag(content):
@@ -89,8 +101,7 @@ if __name__ == "__main__":
     temp = roomCrawler('005930')
     crawl_data = temp.run()
     for item in crawl_data:
-        print(item)
-#    kospi100 = crawl_kospi(100)
+        producer.send(topic, value = item)
 
 
 # In[70]:
