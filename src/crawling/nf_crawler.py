@@ -15,7 +15,6 @@ from collections import deque
 with open('./config/config.json') as json_file:
     config_data = json.load(json_file)
 
-print(config_data)    
 addr = [config_data['kafka']+':9092']
 
 topic = 'naver.finance.board'
