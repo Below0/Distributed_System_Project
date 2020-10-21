@@ -1,9 +1,3 @@
-#!/usr/bin/env python
-# coding: utf-8
-
-# In[7]:
-
-
 import os
 import sys
 import urllib.request
@@ -17,17 +11,17 @@ import json
 import datetime
 from collections import deque
 
-# with statement
 
-with open('./config/db.json') as json_file:
+with open('./config/config.json') as json_file:
     config_data = json.load(json_file)
-    
-addr = [config_data['addr']+':9092']
+
+print(config_data)    
+addr = [config_data['kafka']+':9092']
 
 topic = 'naver.finance.board'
 
 producer = KafkaProducer(bootstrap_servers=addr,
-                         value_serializer=lambda v: json.dumps(v).encode('utf-8'),
+                         value_serializer=lambda v: json.dumps(v, ensure_ascii=False).encode('utf-8'),
                         api_version=(0,10))
 
 
@@ -53,7 +47,6 @@ class roomCrawler:
     def detail_crawl(self, link):
         target_link = self.main_url + link
         bs = get_bs_obj(target_link)
-        
         author_text = bs.find("span", class_="gray03").text
         ID, IP = author_text.split(" ")
         ID = ID[:-4] # Erasing Masking
@@ -81,37 +74,20 @@ class roomCrawler:
         return post
         
     def room_crawl(self, page = 1):
-        kospi = deque()
         bs = get_bs_obj(self.room_url+'&page='+str(page))
         lst = bs.find_all("td", class_="title")
             
-        for item in lst:
-            a = item.find('a')
+        for i in range(len(lst)-1, 0, -1):
+            a = lst[i].find('a')
             link = a.get('href')
             post = self.detail_crawl(link)
-            kospi.appendleft(post)
+            producer.send(topic, value = post)
 
-        return kospi
         
     def run(self):
-        result = self.room_crawl()
-        return result
+        self.room_crawl()
 
 if __name__ == "__main__":
     temp = roomCrawler('005930')
     crawl_data = temp.run()
-    for item in crawl_data:
-        producer.send(topic, value = item)
-
-
-# In[70]:
-
-
-
-
-
-# In[ ]:
-
-
-
-
+	
