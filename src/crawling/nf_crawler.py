@@ -1,20 +1,22 @@
+#-*- coding:utf-8 -*-
+
 import os
 import sys
 import urllib.request
 from urllib.parse import *
 import requests
 from bs4 import BeautifulSoup
-from kafka import KafkaProducer
+#from kafka import KafkaProducer
 import json
 import re
 import json
 import datetime
 
-with open('./config/config.json') as json_file:
-    config_data = json.load(json_file)
+#with open('./config/config.json') as json_file:
+#    config_data = json.load(json_file)
 
-kafka_ip = [config_data['kafka'] + ':9092']
-topic = 'naver.finance.board'
+#kafka_ip = [config_data['kafka'] + ':9092']
+#topic = 'naver.finance.board'
 
 
 def remove_tag(content):
@@ -35,9 +37,6 @@ class roomCrawler:
     def __init__(self, code='005930', page=2):  # default code = 삼성전지
         self.room_url = self.main_url + '/item/board.nhn?code=' + code
         self.page = page
-        self.producer = KafkaProducer(bootstrap_servers=kafka_ip,
-                                      value_serializer=lambda v: json.dumps(v, ensure_ascii=False).encode('utf-8'),
-                                      api_version=(0, 10))
 
     def detail_crawl(self, link):
         try:
@@ -53,6 +52,7 @@ class roomCrawler:
 
             title = bs.find("strong", class_="p15").text
             body = bs.find("div", id="body").text.replace("\r", " ")
+            body = body.replace("\n", " ")
 
             good_cnt = bs.find("strong", class_="_goodCnt").text
             bad_cnt = bs.find("strong", class_="_badCnt").text
@@ -76,13 +76,14 @@ class roomCrawler:
     def room_crawl(self, page=1):
         bs = get_bs_obj(self.room_url + '&page=' + str(page))
         lst = bs.find_all("td", class_="title")
+        log_url = "http://127.0.0.1:8888/nfCrawlerResult"
 
         for i in range(len(lst) - 1, 0, -1):
             a = lst[i].find('a')
             link = a.get('href')
-            post = self.detail_crawl(link)
-            if post is not None:
-                self.producer.send(topic, value=post)
+            post_json = self.detail_crawl(link)
+            if post_json is not None:
+                requests.post(log_url, json=post_json)
 
     def run(self):
         self.room_crawl()
