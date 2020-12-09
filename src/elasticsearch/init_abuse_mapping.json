@@ -1,0 +1,32 @@
+{
+  
+    "mappings" : 
+    {
+      "properties" : 
+      {
+	"id" : {
+          "type" : "keyword"
+        },
+	"ip" :{
+		"type" : "keyword"
+	},
+	"msg" : {
+          "type" : "keyword"
+        },
+	"date" : {
+	  "type" : "date"
+	},
+	"abuse_type" : {
+	  "type" : "integer"
+	},
+	"score" : {
+	  "type" : "double"
+	}
+      }
+    }
+}
+
+
+
+
+

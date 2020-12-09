@@ -1,50 +1,95 @@
 {
-  
+      "settings" : {
+          "index": {
+              "analysis": {
+                  "analyzer": {
+                      "nori_analyzer": {
+                          "type": "custom",
+                          "tokenizer": "nori_user_dict",
+                          "filter": ["my_posfilter"]
+                      }
+                  },
+                  "tokenizer": {
+                      "nori_user_dict": {
+                          "type": "nori_tokenizer",
+                          "decompound_mode": "mixed",
+                          "user_dictionary": "userdict_ko.txt"
+                      }
+                  },
+                  "filter": {
+                      "my_posfilter": {
+                          "type": "nori_part_of_speech",
+                          "stoptags": [
+			    "E",
+                        "J",
+                        "MAG",
+                        "MM",
+			"MAJ",
+                        "NA",
+                        "NR",
+                        "SC",
+                        "SE",
+                        "SF",
+                        "SH",
+                        "SL",
+                        "SN",
+                        "SP",
+                        "SSC",
+                        "SSO",
+                        "SY",
+                        "UNA",
+                        "UNKNOWN",
+                        "VA",
+                        "VCN",
+                        "VCP",
+                        "VSV",
+                        "VV",
+                        "VX",
+                        "XPN",
+                        "XR",
+                        "XSA",
+                        "XSN",
+                        "XSV",
+			"NNB",
+			"NNBC",
+			"NR",
+			"NP"
+			  ]
+                      }
+                  }
+              }
+          }
+        },	
     "mappings" : 
     {
       "properties" : 
       {
         "bad" : {
-          "type" : "text",
-          "fields" : {
-            "keyword" : {
-              "type" : "keyword",
-              "ignore_above" : 256
-            }
-          }
+          "type" : "integer"
         },
 	"body" : {
-          "type" : "text",
+           "type" : "text",
           "fields" : {
             "keyword" : {
               "type" : "keyword",
-              "ignore_above" : 256
+              "ignore_above" : 1000
             }
           }
-        },
+	},
         "date" : {
           "type" : "date"
         },
         "good" : {
-          "type" : "text",
-          "fields" : {
-            "keyword" : {
-              "type" : "keyword",
-              "ignore_above" : 256
-            }
-          }
+          "type" : "integer"
         },
         "id" : {
-          "type" : "text",
-          "fields" : {
-            "keyword" : {
-              "type" : "keyword",
-              "ignore_above" : 256
-            }
-          }
+          "type" : "keyword"
         },
         "ip" : {
-          "type" : "text",
+          "type" : "keyword"
+        },
+        "title" : {
+		   "type" : "text",
           "fields" : {
             "keyword" : {
               "type" : "keyword",
@@ -52,15 +97,30 @@
             }
           }
         },
-        "title" : {
-          "type" : "text",
-          "fields" : {
-            "keyword" : {
-              "type" : "keyword",
-              "ignore_above" : 256
-            }
-          }
-        }
+	"content" :{
+		"type" : "text",
+		"analyzer" : "nori_analyzer",
+		"fielddata": true
+	},
+	"collected_at" :{
+		"type" : "date"
+	},
+	"is_reply":{
+		"type" : "integer"
+	},
+	"emotion":{
+		"type": "short"
+	},
+	"positive_score":{
+		"type":"float"
+	},
+	"normal_score":{
+		"type":"float"
+	},
+	"negative_score":{
+		"type":"float"
+	}
+
       }
     }
 }
